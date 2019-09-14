@@ -15,14 +15,18 @@ class Rainbow(commands.Cog):
     def cog_unload(self):
         self.rainbow_role.stop()
 
-    @tasks.loop(seconds=randint(280, 320))
+    @tasks.loop(seconds=300)
     async def rainbow_role(self, ctx):
+        print(1)
         role = ctx.guild.get_role(self.role_id)
+        print(role)
         await role.edit(color=self.colors[self.index])
+        print(role)
         if self.index > len(self.colors):
             self.index = 0
         else:
             self.index += 1
+        print(self.index)
 
     @rainbow_role.before_loop
     async def before_rainbow_role(self):

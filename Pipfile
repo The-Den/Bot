@@ -12,6 +12,7 @@ coloredlogs = "*"
 pyyaml = "*"
 python-dotenv = "*"
 python-dateutil = "*"
+asyncpg = "*"
 
 [requires]
 python_version = "3.7"

@@ -5,6 +5,7 @@ import logging
 import sys
 import os
 import yaml
+import asyncpg
 from collections.__init__ import Counter
 from utils.config.config import get_icon
 
@@ -36,6 +37,14 @@ def setup_bot(bot):
     log.info(f"\n{get_icon()}\nLoading....")
     bot.debug = any("debug" in arg.lower() for arg in sys.argv)
     starter_modules(bot)
+    credentials = {
+        "user": os.environ["PG_USER"],
+        "password": os.environ["PG_PASS"],
+        "database": "theden",
+        "host": "127.0.0.1",
+    }
+    bot.pool = bot.loop.run_until_complete(asyncpg.create_pool(**credentials))
+    bot.log.info(bot.pool)
     bot.uptime = datetime.datetime.utcnow()
     bot.python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     bot.version = "1.0.0"
@@ -44,7 +53,6 @@ def setup_bot(bot):
     bot.commands_used = Counter()
     bot.process = psutil.Process()
     bot.session = aiohttp.ClientSession(loop=bot.loop)
-    bot.conn = ""  # TODO: database
     bot.color = 11533055
     bot.error_color = 15158332
     if bot.debug:

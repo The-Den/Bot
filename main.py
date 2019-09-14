@@ -23,6 +23,7 @@ class Bot(DiscordBot):
         except discord.errors.LoginFailure or discord.errors.HTTPException as e:
             self.log.error(f"Shit: {repr(e)}", exc_info=False)
         except KeyboardInterrupt:
+            self.loop.run_until_complete(self.pool.close())
             self.loop.run_until_complete(self.logout())
 
     if __name__ != "__main__":

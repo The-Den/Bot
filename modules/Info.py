@@ -24,29 +24,29 @@ statuses = {
 }
 
 
+def get_relative_delta(time):
+    delta = relativedelta(datetime.now(), time)
+    total_days = (datetime.now() - time).days
+    tme = []
+    msg = time.strftime("%A, %B %d %Y @ %I:%M%p %Z")
+    if delta.years:
+        years = delta.years
+        tme.append(f"{years} years" if years != 1 else "1 year")
+    if delta.months:
+        months = delta.months
+        tme.append(f"{months} months" if months != 1 else "1 month")
+    if delta.days:
+        days = delta.days
+        tme.append(f"{days} days" if days != 1 else "1 day")
+    msg += "\n"
+    msg += ", ".join(tme)
+    msg += f" ago ({total_days} days)" if total_days > 1 or 0 else f" ago (1 day)"
+    return msg
+
+
 class User(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
-    @staticmethod
-    def get_relative_delta(time):
-        delta = relativedelta(datetime.now(), time)
-        total_days = (datetime.now() - time).days
-        tme = []
-        msg = time.strftime("%A, %B %d %Y @ %I:%M%p %Z")
-        if delta.years:
-            years = delta.years
-            tme.append(f"{years} years" if years != 1 else "1 year")
-        if delta.months:
-            months = delta.months
-            tme.append(f"{months} months" if months != 1 else "1 month")
-        if delta.days:
-            days = delta.days
-            tme.append(f"{days} days" if days != 1 else "1 day")
-        msg += "\n"
-        msg += ", ".join(tme)
-        msg += f" ago ({total_days} days)" if total_days > 1 or 0 else f" ago (1 day)"
-        return msg
 
     @commands.guild_only()
     @commands.group(aliases=["whois"], invoke_without_command=True, description="Check a users information!")
@@ -110,12 +110,13 @@ class User(commands.Cog):
                 em.set_thumbnail(url=user.avatar_url)
             em.set_author(name=name)
 
-            em.add_field(name="Joined Discord on:", value=self.get_relative_delta(user.created_at), inline=False)
-            em.add_field(name="Joined this server on:", value=self.get_relative_delta(user.joined_at), inline=False)
+            em.add_field(name="Joined Discord on:", value=get_relative_delta(user.created_at), inline=False)
+            em.add_field(name="Joined this server on:", value=get_relative_delta(user.joined_at), inline=False)
 
             return await ctx.send(embed=em)
 
-    @user.command(name="permissions", aliases=["perms"], description="Check a users permissions for a given Text/Voice channel")
+    @user.command(name="permissions", aliases=["perms"],
+                  description="Check a users permissions for a given Text/Voice channel")
     async def user_permissions(self, ctx, user: discord.Member = None, *,
                                channel: Union[discord.TextChannel, discord.VoiceChannel] = None):
         """
