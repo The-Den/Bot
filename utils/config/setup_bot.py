@@ -41,7 +41,7 @@ def setup_bot(bot):
         "user": os.environ["PG_USER"],
         "password": os.environ["PG_PASS"],
         "database": "theden",
-        "host": "127.0.0.1",
+        "host": "10.1.1.111",
     }
     bot.pool = bot.loop.run_until_complete(asyncpg.create_pool(**credentials))
     bot.log.info(bot.pool)
