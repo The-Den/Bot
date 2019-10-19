@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import asyncio
 from datetime import datetime
-from modules.Info import get_relative_delta
+from modules.Commands.Info import get_relative_delta
 
 roles = {
     "staff": 365262621642850304,
@@ -20,6 +20,9 @@ class StaffApplications(commands.Cog):
     @commands.guild_only()
     @commands.command(description="Apply to be a part of the staff team!")
     async def apply(self, ctx):
+        """
+        {"permissions": {"user": [], "bot": [embed_links]}}
+        """
         guild, author = ctx.guild, ctx.author
         banned = guild.get_role(roles["banned"])
         if banned in author.roles:

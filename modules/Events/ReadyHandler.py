@@ -1,21 +1,25 @@
 import json
 import discord
+from discord.ext import commands
 
 
-class ReadyHandler:
+class ReadyHandler(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.Cog.listener()
     async def on_connect(self):
         await self.bot.change_presence(
             activity=discord.Game(name="Booting..", type=discord.ActivityType.playing), status=discord.Status.dnd)
         self.bot.gateway_server_name = json.loads(self.bot.ws._trace[0])[0]
         self.bot.session_server_name = json.loads(self.bot.ws._trace[0])[1]["calls"][0]
 
+    @commands.Cog.listener()
     async def on_resumed(self):
         self.bot.gateway_server_name = json.loads(self.bot.ws._trace[0])[0]
         self.bot.session_server_name = json.loads(self.bot.ws._trace[0])[1]["calls"][0]
 
+    @commands.Cog.listener()
     async def on_ready(self):
         self.bot.gateway_server_name = json.loads(self.bot.ws._trace[0])[0]
         self.bot.session_server_name = json.loads(self.bot.ws._trace[0])[1]["calls"][0]
@@ -26,9 +30,9 @@ class ReadyHandler:
             f"User: {self.bot.user} ({self.bot.user.id})\n" \
             f"Avatar: {self.bot.user.avatar_url_as(static_format='png', size=512)}\n" \
             f"\nInformation ℹ\n" \
-            f"Bot version: {self.bot.version}\n" \
-            f"Lib version: {self.bot.lib_version}\n" \
-            f"Python version: {self.bot.python_version}"
+            f"Bot version: {self.bot.version['bot']}\n" \
+            f"Lib version: {self.bot.version['discord.py']}\n" \
+            f"Python version: {self.bot.version['python']}"
         self.bot.log.info(info)
         await self.bot.change_presence(
             activity=discord.Game(name="with Kanin | !help", type=discord.ActivityType.playing),
@@ -37,7 +41,4 @@ class ReadyHandler:
 
 
 def setup(bot):
-    events = [ReadyHandler(bot).on_ready, ReadyHandler(bot).on_connect, ReadyHandler(bot).on_resumed]
-    for event in events:
-        bot.event(event)
-        bot.log.info(f"Event loaded: {event}")
+    bot.add_cog(ReadyHandler(bot))

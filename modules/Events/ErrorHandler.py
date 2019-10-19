@@ -1,8 +1,11 @@
 from datetime import timedelta
 from discord.ext import commands
+import discord
+import traceback
+from utils.checks.bot_checks import can_send, can_embed, can_react
 
 
-class ErrorHandler:
+class ErrorHandler(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -22,16 +25,30 @@ class ErrorHandler:
             fmt = f"{seconds} seconds"
         return f"You can try again in {fmt}"
 
+    @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
+        if isinstance(error, commands.CommandNotFound):
+            return
         if isinstance(error, commands.CommandOnCooldown):
             return await ctx.send(self.format_retry_after(error.retry_after))
         ctx.command.reset_cooldown(ctx)
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send_cmd_help(ctx)
+        if isinstance(error, (commands.MissingRequiredArgument, commands.BadUnionArgument)):
+            return await ctx.send_cmd_help(ctx)
+        elif isinstance(error, commands.CommandInvokeError):
+            if not isinstance(ctx.channel, discord.DMChannel):
+                if not can_send(ctx) or not can_embed(ctx):
+                    if can_react(ctx):
+                        return await ctx.message.add_reaction("❌")
+                    try:
+                        return await ctx.author.send("Missing permissions to `Send Messages` and/or `Embed Links`!")
+                    except discord.Forbidden:
+                        return self.bot.log.error("Could not respond to command, all checks failed!")
         else:
+            long = "".join(traceback.format_exception(type(error), error, error.__traceback__))
+            print(long)
             self.bot.log.error(error)
             return await ctx.send_error(ctx, error)
 
 
 def setup(bot):
-    bot.event(ErrorHandler(bot).on_command_error)
+    bot.add_cog(ErrorHandler(bot))

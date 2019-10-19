@@ -8,6 +8,7 @@ from discord.ext.commands import Bot as DiscordBot
 from dotenv import load_dotenv
 
 from utils.config.setup_bot import setup_bot, setup_logger
+from utils.ctx import CustomContext
 
 description = "A Discord bot"
 
@@ -25,6 +26,9 @@ class Bot(DiscordBot):
         except KeyboardInterrupt:
             self.loop.run_until_complete(self.pool.close())
             self.loop.run_until_complete(self.logout())
+
+    async def get_context(self, message, *, cls=None):
+        return await super().get_context(message, cls=cls or CustomContext)
 
     if __name__ != "__main__":
         setup_logger()

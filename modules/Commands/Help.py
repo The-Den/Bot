@@ -1,6 +1,7 @@
-from discord.ext import commands as dcommands
-import discord
 import json
+
+import discord
+from discord.ext import commands as dcommands
 
 
 class MyHelpCommand(dcommands.MinimalHelpCommand):
@@ -15,7 +16,7 @@ class MyHelpCommand(dcommands.MinimalHelpCommand):
         return None
 
     def get_command_signature(self, command):
-        return f"{self.clean_prefix}{command.qualified_name} {command.signature}"
+        return f"{self.clean_prefix}{command.qualified_name} {self.context.command_signature(command=command)}"
 
     def get_ending_note(self):
         command_name = self.context.invoked_with
@@ -29,9 +30,9 @@ class MyHelpCommand(dcommands.MinimalHelpCommand):
             self.paginator.add_line(joined)
 
     def add_subcommand_formatting(self, command):
-        fmt = f"{self.clean_prefix}{command.qualified_name} - `{command.description}`"\
-            if command.description else\
-              f"{self.clean_prefix}{command.qualified_name}"
+        fmt = f"{self.clean_prefix}{command.qualified_name} - `{command.description}`" \
+            if command.description else \
+            f"{self.clean_prefix}{command.qualified_name}"
         self.paginator.add_line(fmt)
 
     def add_aliases_formatting(self, aliases):

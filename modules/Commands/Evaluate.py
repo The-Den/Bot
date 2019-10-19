@@ -7,11 +7,12 @@ import textwrap
 import time
 import traceback
 from io import BytesIO
-from utils.checks import checks
 
 import discord
 import psutil
 from discord.ext import commands
+
+from utils.checks import checks
 
 ENV = {
     "contextlib": contextlib,
@@ -84,9 +85,11 @@ async def func():
                            file=discord.File(data, filename=f'Result.txt'))
 
     @checks.is_owner()
-    @commands.command(hidden=True)
-    async def eval(self, ctx, *, code):
-        """Evaluate code in a REPL-like format."""
+    @commands.command(hidden=True, description="Evaluate code in a REPL like environment")
+    async def eval(self, ctx, *, code: str):
+        """
+        {"permissions": {"user": [], "bot": []}}
+        """
         code = code.strip("`")
         if code.startswith("py\n"):
             code = "\n".join(code.split("\n")[1:])

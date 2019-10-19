@@ -1,8 +1,10 @@
+from datetime import datetime
+from typing import Union
+
 import discord
 from dateutil.relativedelta import relativedelta
-from datetime import datetime
 from discord.ext import commands
-from typing import Union
+from urllib import parse
 
 key_perms = ["kick_members", "ban_members", "administrator", "manage_channels", "manage_server", "manage_messages",
              "mention_everyone", "manage_nicknames", "manage_roles", "manage_webhooks", "manage_emojis"]
@@ -26,7 +28,6 @@ statuses = {
 
 def get_relative_delta(time):
     delta = relativedelta(datetime.now(), time)
-    total_days = (datetime.now() - time).days
     tme = []
     msg = time.strftime("%A, %B %d %Y @ %I:%M%p %Z")
     if delta.years:
@@ -38,9 +39,13 @@ def get_relative_delta(time):
     if delta.days:
         days = delta.days
         tme.append(f"{days} days" if days != 1 else "1 day")
+    if len(tme) == 0:
+        return msg + "\nToday!"
     msg += "\n"
     msg += ", ".join(tme)
-    msg += f" ago ({total_days} days)" if total_days > 1 or 0 else f" ago (1 day)"
+    msg += " ago"
+    if len(tme) != 1:
+        msg += f" ({(datetime.now() - time).days} days)"
     return msg
 
 
@@ -163,6 +168,38 @@ class User(commands.Cog):
         em.set_image(url=url)
         em.set_author(name=f"{user.name}'s avatar")
         await ctx.send(embed=em)
+
+    @commands.command()
+    async def ud(self, ctx, *, msg):
+        """Urban Dictionary search"""
+        number = 1
+        if " | " in msg:
+            msg, number = msg.rsplit(" | ", 1)
+        search = parse.quote(msg)
+        async with self.bot.session.get("http://api.urbandictionary.com/v0/define", params={"term": search}) as resp:
+            result = await resp.json()
+        if not result["list"]:
+            return await ctx.send(f"{msg} couldn't be found on Urban Dictionary.")
+        else:
+            top_result = result["list"][int(number) - 1]
+            em = discord.Embed(description=top_result["definition"],
+                               url=top_result["permalink"], color=self.bot.color)
+            if len(result["list"]) > 1:
+                if top_result["example"]:
+                    em.add_field(name="Example:", value=top_result["example"])
+                em.set_author(name=top_result["word"],
+                              icon_url="https://lh5.ggpht.com/oJ67p2f1o35dzQQ9fVMdGRtA7jKQdxUFSQ7vYstyqTp-Xh-H5BAN4T5"
+                                       "_abmev3kz55GH=w300")
+                number = str(int(number) + 1)
+                em.set_footer(text=f"Results: {len(result['list'])}. Use !ud {msg} | {number} to see a different result!")
+            else:
+                if top_result["example"]:
+                    em.add_field(name="Example:", value=top_result["example"])
+                em.set_author(name=top_result["word"],
+                              icon_url="https://lh5.ggpht.com/oJ67p2f1o35dzQQ9fVMdGRtA7jKQdxUFSQ7vYstyqTp-Xh-H5BAN4T5"
+                                       "_abmev3kz55GH=w300")
+                em.set_footer(text=f"Results: {len(result['list'])}.")
+            await ctx.send(embed=em)
 
 
 def setup(bot):
