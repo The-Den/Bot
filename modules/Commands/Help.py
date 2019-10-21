@@ -1,10 +1,56 @@
 import json
+import re
 
 import discord
-from discord.ext import commands as dcommands
+from discord.ext import commands
+from discord.ext.commands import converter as converters
 
 
-class MyHelpCommand(dcommands.MinimalHelpCommand):
+def command_signature(command: commands.Command):
+    if command.usage:
+        return command.usage
+
+    params = command.clean_params
+    if not params:
+        return ""
+
+    result = []
+    for name, param in params.items():
+        greedy = isinstance(param.annotation, converters._Greedy)
+        if param.kind == param.VAR_POSITIONAL:
+            result.append(f"[{clean_param(param)}...]")
+        elif greedy:
+            result.append(f"[{clean_param(param)}]...")
+        elif command._is_typing_optional(param.annotation):
+            result.append(f"[{clean_param(param)}]")
+        else:
+            result.append(f"<{clean_param(param)}>")
+
+    return ' '.join(result)
+
+
+def clean_param(param):
+    if not param.annotation:
+        return param.name
+
+    clean = str(param)
+    clean = clean.replace(" ", "")
+    clean = clean.replace("=None", "")
+    if "Union" in clean:
+        args = clean.split(":")
+        args1 = args[1].replace("Union[", "").replace("]", "")
+        args1 = " or ".join([re.search(r".*(?=\.)\.(.*)", item).group(1) for item in args1.split(",")])
+        clean = f"{args[0]}:{args1}"
+    if ":" in clean:
+        parts = clean.split(":")
+        reg = re.search(r".*(?=\.)\.(.*)", parts[1])
+        clean = f"{parts[0]}:{reg.group(1)}" if reg else clean
+    clean = clean.replace("str", "Text")
+    clean = clean.replace("int", "Number")
+    return clean
+
+
+class MyHelpCommand(commands.MinimalHelpCommand):
     async def send_pages(self):
         destination = self.get_destination()
         for page in self.paginator.pages:
@@ -16,16 +62,16 @@ class MyHelpCommand(dcommands.MinimalHelpCommand):
         return None
 
     def get_command_signature(self, command):
-        return f"{self.clean_prefix}{command.qualified_name} {self.context.command_signature(command=command)}"
+        return f"{self.clean_prefix}{command.qualified_name} {command_signature(command)}"
 
     def get_ending_note(self):
         command_name = self.context.invoked_with
         return f"Type `{self.clean_prefix}{command_name} [command]` for more info on a command.\n" \
                f"You can also type `{self.clean_prefix}{command_name} [category]` for more info on a category."
 
-    def add_bot_commands_formatting(self, commands, heading):
-        if commands:
-            joined = ", ".join(c.name for c in commands) + "\n"
+    def add_bot_commands_formatting(self, command_list, heading):
+        if command_list:
+            joined = ", ".join(c.name for c in command_list) + "\n"
             self.paginator.add_line(f"__**{heading}**__")
             self.paginator.add_line(joined)
 
@@ -92,7 +138,7 @@ class MyHelpCommand(dcommands.MinimalHelpCommand):
         return msg
 
 
-class Help(dcommands.Cog):
+class Help(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self._original_help_command = bot.help_command
