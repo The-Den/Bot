@@ -17,7 +17,7 @@ class Bot(DiscordBot):
     def __init__(self):
         load_dotenv(join(dirname(__file__), 'env/.env'))
         atexit.register(lambda: asyncio.ensure_future(self.logout()))
-        super().__init__(command_prefix=["!!"], description=description, case_insensitive=True)
+        super().__init__(command_prefix=["!"], description=description, case_insensitive=True)
         setup_bot(self)
         try:
             self.loop.run_until_complete(self.start(os.getenv("TOKEN")))
