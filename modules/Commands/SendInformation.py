@@ -15,7 +15,7 @@ class SendInfo(commands.Cog):
     @commands.group(aliases=["rr"], hidden=True)
     async def reactroles(self, ctx):
         if not ctx.invoked_subcommand:
-            return await ctx.send_cmd_help(ctx)
+            return await ctx.send_help(ctx.command)
 
     @reactroles.command(name="colors")
     async def reactroles_colors(self, ctx):

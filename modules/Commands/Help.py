@@ -4,6 +4,7 @@ import re
 import discord
 from discord.ext import commands
 from discord.ext.commands import converter as converters
+from utils.checks import checks
 
 
 def command_signature(command: commands.Command):
@@ -115,6 +116,8 @@ class MyHelpCommand(commands.MinimalHelpCommand):
         user, guild, channel = ctx.author, ctx.guild, ctx.channel
         user_needs_perms = docs["user"] + ["send_messages"]
         bot_needs_perms = docs["bot"] + user_needs_perms
+        if "bot_owner" in user_needs_perms:
+            return "You must be the bot owner to use this command"
         user_perms = [x[0] for x in iter(channel.permissions_for(user)) if x[1]]
         bot_perms = [x[0] for x in iter(channel.permissions_for(guild.me)) if x[1]]
         user_perms_list = ", ".join([x.replace("_", " ").title() for x in user_needs_perms if x in user_perms])

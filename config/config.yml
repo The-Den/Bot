@@ -1,3 +1,19 @@
 ---
+version: 0.0.0
+owners:
+  - 173237945149423619 # Please keep my ID here
+
+colors:
+  main: 8451583
+  error: 15158332
+
+#prefixes:
+#  main:
+#    - !
+#  debug:
+#    - !!
+
 channels:
   fishing: 625642718860673044
+
+time_format: "%A, %B %d %Y @ %I:%M%p %Z"

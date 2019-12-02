@@ -118,6 +118,5 @@ dmypy.json
 .pyre/
 .idea
 Bot.iml
-Pipfile.lock
 utils/Database/
 utils/functions/

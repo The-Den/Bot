@@ -13,6 +13,7 @@ pyyaml = "*"
 python-dotenv = "*"
 python-dateutil = "*"
 asyncpg = "*"
+requests = "*"
 
 [requires]
 python_version = "3.7"
