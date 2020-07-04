@@ -142,7 +142,7 @@ class Counting(commands.Cog):
         await self.update_counting_info(message)
 
         # Change channel topic
-        await message.channel.edit(topic=f"**Next count:** {content + 1}")
+        # await message.channel.edit(topic=f"**Next count:** {content + 1}")
 
         # Delete the original message and resend it as a webhook to prevent deleting
         hook = Webhook.from_url(settings["webhook_url"],
