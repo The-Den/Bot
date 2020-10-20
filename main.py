@@ -7,18 +7,19 @@ import discord
 from discord.ext.commands import Bot as DiscordBot
 from dotenv import load_dotenv
 
-from utils.config.setup_bot import setup_bot, setup_logger
+from utils import setup
 from utils.ctx import CustomContext
+from config import config
 
 description = "A Discord bot"
 
 
 class Bot(DiscordBot):
     def __init__(self):
-        load_dotenv(join(dirname(__file__), 'env/.env'))
+        load_dotenv(join(dirname(__file__), "config/.env"))
         atexit.register(lambda: asyncio.ensure_future(self.logout()))
-        super().__init__(command_prefix=["!"], description=description, case_insensitive=True)
-        setup_bot(self)
+        super().__init__(command_prefix=["!"], description=description, case_insensitive=True, intents=config.intents)
+        setup.bot(self)
         try:
             self.loop.run_until_complete(self.start(os.getenv("TOKEN")))
         except discord.errors.LoginFailure or discord.errors.HTTPException as e:
@@ -31,9 +32,9 @@ class Bot(DiscordBot):
         return await super().get_context(message, cls=cls or CustomContext)
 
     if __name__ != "__main__":
-        setup_logger()
+        setup.logger()
 
 
 if __name__ == "__main__":
-    setup_logger()
+    setup.logger()
     Bot()
