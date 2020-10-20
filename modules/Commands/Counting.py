@@ -58,13 +58,22 @@ class Counting(commands.Cog):
                 """SELECT user_id, user_count FROM counting WHERE guild_id=$1 ORDER BY user_count DESC LIMIT 10""",
                 ctx.guild.id
             )
+            user = await db.fetchrow(
+                """SELECT * FROM (
+                SELECT row_number() OVER (
+                PARTITION BY guild_id ORDER BY user_count DESC
+                ) AS rank, * FROM counting ORDER BY user_count DESC
+                ) AS _ WHERE user_id = $1""",
+                ctx.author.id
+            )
             msg = ""
             index = 0
             for row in rows:
                 index += 1
-                msg += f"{emojis[index]} `{row['user_count']}`: <@{row['user_id']}>\n"
+                msg += f"{emojis[index]} `{row['user_count']:,}`: <@{row['user_id']}>\n"
             em = discord.Embed(description=msg, color=self.bot.color)
             em.set_author(name="Top counters!")
+            em.add_field(name="Your Rank:", value=f"**{user['rank']:,}.** Count: `{user['user_count']:,}`")
             em.set_footer(text=f"Requested by {ctx.author}")
             await ctx.send(embed=em)
 
