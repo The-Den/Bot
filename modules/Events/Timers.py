@@ -1,5 +1,6 @@
 from discord.ext import commands
 import asyncio
+from config import config
 
 
 class Timers(commands.Cog):
@@ -9,7 +10,7 @@ class Timers(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         author, channel, content = message.author, message.channel, message.content
-        if channel.id == self.bot.config()["channels"]["fishing"]:
+        if channel.id == config.channels["fishing"]:
             if content in ["?fish", "t!fish"]:
                 def check(m):
                     return m.author.id == 172002275412279296 and m.channel == channel

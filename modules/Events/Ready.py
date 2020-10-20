@@ -1,4 +1,6 @@
 import json
+import os
+
 import discord
 from discord.ext import commands
 
@@ -34,10 +36,35 @@ class ReadyHandler(commands.Cog):
             f"Lib version: {self.bot.version['discord.py']}\n" \
             f"Python version: {self.bot.version['python']}"
         self.bot.log.info(info)
+        if len(self.bot.cogs) == 1:
+            self.starter_modules()
         await self.bot.change_presence(
             activity=discord.Game(name="with Kanin | !help", type=discord.ActivityType.playing),
             status=discord.Status.online)
         self.bot.log.info("Logged in and ready!")
+
+    def starter_modules(self):
+        paths = ["modules/Events", "modules/Commands"]
+        blacklist = ["modules/Events/Ready"]
+        if self.bot.debug:
+            blacklist.append("modules/Events/Timers")
+        for path in paths:
+            loaded, failed = 0, 0
+            name = path.split("/")[-1]
+            for file in os.listdir(path):
+                try:
+                    if file.endswith(".py"):
+                        to_load = f"{path}/{file[:-3]}"
+                        if to_load not in blacklist:
+                            self.bot.load_extension(to_load.replace("/", "."))
+                            loaded += 1
+                except Exception as e:
+                    failed += 1
+                    self.bot.log.error(f"Failed to load {path}/{file}: {repr(e)}")
+            message = f"Loaded {loaded} {name}"
+            if failed > 0:
+                message += f" | Failed to load {failed} {name}"
+            self.bot.log.info(message)
 
 
 def setup(bot):

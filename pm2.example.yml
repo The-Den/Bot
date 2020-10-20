@@ -1,0 +1,5 @@
+apps:
+  - name: "Den Bot"
+    script: "/path/to/main.py"
+    interpreter: "pipenv"
+    interpreter_args: "run python"
